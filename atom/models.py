@@ -1,10 +1,10 @@
-import NULLABLE
 from django.utils import timezone
 
 from django.db import models
 
 from man.models import Gent
 
+NULLABLE = {'null': True, 'blank': True}
 
 class Habit(models.Model):
     owner = models.ForeignKey(Gent, on_delete=models.CASCADE, **NULLABELE, verbose_name='Создатель')
