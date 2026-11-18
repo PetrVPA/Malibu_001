@@ -1,32 +1,36 @@
 from rest_framework import serializers
-from .models import Habit
-from .validators import validate_last_completion
+from atom.models import Habit
 from django.core.exceptions import ValidationError as DjangoValidationError
 
 
 class HabitSerializer(serializers.ModelSerializer):
     class Meta:
         model = Habit
-        fields = '__all__'
-        read_only_fields = ('owner',)  # Владелец назначается автоматически
+        fields = "__all__"
+        read_only_fields = ("owner",)
 
     def validate(self, attrs):
-        # DRF вызывает этот метод перед сохранением.
-        # Мы можем вызвать нашу модель с текущими данными, чтобы сработал метод clean()
-
-        # Создаем временный экземпляр (не сохраняя в БД), чтобы проверить валидацию
+        # Создаем временный экземпляр модели с данными из запроса
         instance = Habit(**attrs)
 
-        # Если это обновление (Update), нужно подтянуть текущие данные
+        # Явная проверка времени (для надежности)
+        time_to_action = attrs.get("time_to_action")
+        if time_to_action and time_to_action.total_seconds() > 120:
+            raise serializers.ValidationError(
+                {"time_to_action": "Время выполнения не должно превышать 120 секунд."}
+            )
+
+        # Если это обновление (PUT/PATCH), нужно подтянуть текущие данные
         if self.instance:
             for key, value in attrs.items():
                 setattr(self.instance, key, value)
             instance = self.instance
 
         try:
-            instance.full_clean()  # Вызывает clean() и валидаторы полей
+            # Вызываем валидацию модели (clean и валидаторы полей)
+            instance.full_clean()
         except DjangoValidationError as e:
-            # Преобразуем ошибки Django в ошибки DRF
+            # Переводим ошибки Django в формат DRF
             raise serializers.ValidationError(e.message_dict)
 
         return attrs

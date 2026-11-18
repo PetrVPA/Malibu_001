@@ -1,13 +1,12 @@
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
-from datetime import timedelta
+
 
 from man.models import Gent
-from .validators import validate_time_to_action, validate_period
 
-NULLABLE = {'null': True, 'blank': True}
+
+NULLABLE = {"null": True, "blank": True}
 
 
 class Habit(models.Model):
@@ -20,11 +19,16 @@ class Habit(models.Model):
 
     # Исправлено название поля
     related_habit = models.ForeignKey(
-        to="self", on_delete=models.SET_NULL, **NULLABLE, verbose_name="Связанная привычка"
+        to="self",
+        on_delete=models.SET_NULL,
+        **NULLABLE,
+        verbose_name="Связанная привычка",
     )
 
     # Добавлено поле "Признак приятной привычки"
-    is_pleasant = models.BooleanField(default=False, verbose_name="Признак приятной привычки")
+    is_pleasant = models.BooleanField(
+        default=False, verbose_name="Признак приятной привычки"
+    )
 
     # Добавлено значение по умолчанию для периодичности
     period = models.PositiveIntegerField(default=1, verbose_name="Периодичность")
@@ -33,8 +37,6 @@ class Habit(models.Model):
         default=timezone.timedelta(seconds=60), verbose_name="Время на выполнение"
     )
     is_published = models.BooleanField(default=True, verbose_name="Признак публичности")
-
-
 
     class Meta:
         verbose_name = "Привычка"
@@ -63,9 +65,7 @@ class Habit(models.Model):
         # 3. У приятной привычки не может быть вознаграждения/связи
         if self.is_pleasant:
             if self.reward:
-                errors["reward"] = (
-                    "У приятной привычки не может быть вознаграждения."
-                )
+                errors["reward"] = "У приятной привычки не может быть вознаграждения."
             if self.related_habit:
                 errors["related_habit"] = (
                     "У приятной привычки не может быть связанной привычки."
@@ -79,12 +79,12 @@ class Habit(models.Model):
         self.full_clean()
         super().save(*args, **kwargs)
 
+
 class HabitCompletion(models.Model):
     habit = models.ForeignKey(
-        Habit, on_delete=models.CASCADE, related_name="completions",
+        Habit,
+        on_delete=models.CASCADE,
+        related_name="completions",
         verbose_name="Привычка",
     )
     completed_at = models.DateTimeField(auto_now_add=True, verbose_name="Выполнено")
-
-
-
