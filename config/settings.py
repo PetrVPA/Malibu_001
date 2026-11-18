@@ -32,25 +32,30 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    "rest_framework",
+
+
     'atom',
     'man',
-    'django',
-    'django_filters',
 
-    "drf_yasg",
-    "django_extensions",
-    "django_celery_beat",
+    'rest_framework',
+    'rest_framework_simplejwt', # <--- Добавили для JWT
+    'corsheaders',              # <--- Добавили для CORS
+    'django_filters',
+    'drf_yasg',
+    'django_extensions',
+    'django_celery_beat',
 ]
 
 MIDDLEWARE = [
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -71,6 +76,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
 
 
 # Database
@@ -122,7 +128,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Europe/Moscow'
 
 USE_I18N = True
 
@@ -139,18 +145,46 @@ STATICFILES_DIRS = (
     "man/static",
 )
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = "smtp.mail.ru"
-EMAIL_PORT = 465
-EMAIL_USE_TLS = False
-EMAIL_USE_SSL = True
-EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
+
+#EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+#EMAIL_HOST = "smtp.mail.ru"
+#EMAIL_PORT = 465
+#EMAIL_USE_TLS = False
+#EMAIL_USE_SSL = True
+#EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+#EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+#DEFAULT_FROM_EMAIL = os.getenv("EMAIL_HOST_USER")
 
 MAILERS = {
     'default': {
         'BACKEND': 'django.core.mail.backends.console.EmailBackend',
     },
 }
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 5,
+    # ... остальные настройки (JWT, фильтры)
+}
+
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000", # Адрес вашего фронтенда
+    "http://127.0.0.1:8000",
+]
+
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_BOT_NAME = os.getenv('TELEGRAM_BOT_NAME')
+
+CELERY_BROKER_URL = 'redis://172.27.234.42:6379/0'
+CELERY_RESULT_BACKEND = 'redis://172.27.234.42:6379/0'
+
+CELERY_BEAT_SCHEDULE = {
+    'send-habit-reminders-every-minute': {
+        'task': 'atom.tasks.send_habit_reminders',
+        'schedule': crontab(minute='*'), # Запуск каждую минуту
+    },
+}
+
+AUTH_USER_MODEL = 'man.Gent'

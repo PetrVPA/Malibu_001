@@ -3,4 +3,4 @@ from django.db import models
 
 
 class Gent(AbstractUser):
-    chat_id = models.CharField(max_length=20, blank=True, null=True)
+    chat_id = models.CharField(max_length=225, blank=True, null=True)
