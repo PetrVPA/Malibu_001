@@ -14,6 +14,7 @@ def validate_related_habit_and_reward(value, field_name, related_habit, reward):
 
 def validate_time_to_action(value):
     """Время выполнения не должно превышать 120 секунд."""
+    # value - это объект timedelta
     if value and value.total_seconds() > 120:
         raise ValidationError(
             _("Время выполнения привычки не должно превышать 120 секунд.")
@@ -44,13 +45,9 @@ def validate_pleasant_habit(value, is_pleasant, reward, related_habit):
 def validate_period(value):
     """Периодичность не должна быть реже 1 раза в 7 дней."""
     if value is not None and value > 7:
-        raise ValidationError(
-            _("Нельзя выполнять привычку реже, чем 1 раз в 7 дней.")
-        )
+        raise ValidationError(_("Нельзя выполнять привычку реже, чем 1 раз в 7 дней."))
     if value is not None and value < 1:
-        raise ValidationError(
-            _("Периодичность должна быть не менее 1 дня.")
-        )
+        raise ValidationError(_("Периодичность должна быть не менее 1 дня."))
 
 
 def validate_last_completion(habit):
@@ -67,6 +64,8 @@ def validate_last_completion(habit):
 
     if timezone.now() - last.completed_at > timedelta(days=7):
         raise ValidationError(
-            _("Привычка не выполнялась более 7 дней. За одну неделю "
-              "необходимо выполнить привычку хотя бы один раз.")
+            _(
+                "Привычка не выполнялась более 7 дней. За одну неделю "
+                "необходимо выполнить привычку хотя бы один раз."
+            )
         )
